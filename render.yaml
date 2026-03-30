@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: payamino
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: node dist/main.js
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
