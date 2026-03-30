@@ -1,0 +1,219 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model checklist {
+  idchecklist       Int                @id @default(autoincrement())
+  idorden           Int
+  idtemplate        Int?
+  fechainicio       DateTime?          @db.Timestamp(6)
+  fechafin          DateTime?          @db.Timestamp(6)
+  servicioorden     servicioorden      @relation(fields: [idorden], references: [idorden], onDelete: Cascade, onUpdate: NoAction, map: "checklist_id_orden_fkey")
+  checklisttemplate checklisttemplate? @relation(fields: [idtemplate], references: [idtemplate], onDelete: NoAction, onUpdate: NoAction, map: "checklist_id_template_fkey")
+  checklistitem     checklistitem[]
+
+  @@index([idorden], map: "idx_checklist_orden")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model empresa {
+  idempresa         Int                 @id @default(autoincrement())
+  nombre            String              @db.VarChar(120)
+  direccion         String?
+  telefono          String?             @db.VarChar(30)
+  activo            Boolean?            @default(true)
+  fechacreacion     DateTime?           @default(now()) @db.Timestamp(6)
+  checklisttemplate checklisttemplate[]
+  servicioitem      servicioitem[]
+  servicioorden     servicioorden[]
+  usuario           usuario[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model reporte {
+  idreporte     Int            @id @default(autoincrement())
+  idorden       Int?
+  tipo          String?        @db.VarChar(50)
+  url           String?
+  fechacreacion DateTime?      @default(now()) @db.Timestamp(6)
+  servicioorden servicioorden? @relation(fields: [idorden], references: [idorden], onDelete: Cascade, onUpdate: NoAction, map: "reporte_id_orden_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model rol {
+  idrol      Int          @id @default(autoincrement())
+  nombre     String       @db.VarChar(50)
+  usuariorol usuariorol[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model usuario {
+  idusuario     String          @id @db.VarChar(20)
+  idempresa     Int
+  nombre        String          @db.VarChar(120)
+  email         String?         @db.VarChar(120)
+  telefono      String?         @db.VarChar(30)
+  activo        Boolean?        @default(true)
+  created_at    DateTime?       @default(now()) @db.Timestamp(6)
+  ordentecnico  ordentecnico[]
+  servicioorden servicioorden[]
+  empresa       empresa         @relation(fields: [idempresa], references: [idempresa], onDelete: NoAction, onUpdate: NoAction, map: "usuario_id_empresa_fkey")
+  usuarioclave  usuarioclave?
+  usuariorol    usuariorol[]
+  vehiculo      vehiculo[]
+
+  @@index([idempresa], map: "idx_usuario_empresa")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model vehiculo {
+  idvehiculo    Int             @id @default(autoincrement())
+  idusuario     String?         @db.VarChar(20)
+  placa         String          @db.VarChar(20)
+  marca         String?         @db.VarChar(50)
+  modelo        String?         @db.VarChar(50)
+  color         String?         @db.VarChar(30)
+  fechacreacion DateTime?       @default(now()) @db.Timestamp(6)
+  servicioorden servicioorden[]
+  usuario       usuario?        @relation(fields: [idusuario], references: [idusuario], onDelete: NoAction, onUpdate: NoAction, map: "vehiculo_id_cliente_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model checklistfoto {
+  idfoto          Int            @id(map: "checklist_foto_pkey") @default(autoincrement())
+  idchecklistitem Int?
+  url             String
+  fechacreacion   DateTime?      @default(now()) @db.Timestamp(6)
+  checklistitem   checklistitem? @relation(fields: [idchecklistitem], references: [idchecklistitem], onDelete: Cascade, onUpdate: NoAction, map: "checklist_foto_id_checklist_item_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model checklistitem {
+  idchecklistitem       Int                    @id(map: "checklist_item_pkey") @default(autoincrement())
+  idchecklist           Int
+  idtemplateitem        Int?
+  completado            Boolean?               @default(false)
+  comentario            String?
+  checklistfoto         checklistfoto[]
+  checklist             checklist              @relation(fields: [idchecklist], references: [idchecklist], onDelete: Cascade, onUpdate: NoAction, map: "checklist_item_id_checklist_fkey")
+  checklisttemplateitem checklisttemplateitem? @relation(fields: [idtemplateitem], references: [idtemplateitem], onDelete: NoAction, onUpdate: NoAction, map: "checklist_item_id_template_item_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model checklisttemplate {
+  idtemplate            Int                     @id(map: "checklist_template_pkey") @default(autoincrement())
+  idempresa             Int?
+  nombre                String?                 @db.VarChar(120)
+  descripcion           String?
+  fechacreacion         DateTime?               @default(now()) @db.Timestamp(6)
+  checklist             checklist[]
+  empresa               empresa?                @relation(fields: [idempresa], references: [idempresa], onDelete: NoAction, onUpdate: NoAction, map: "checklist_template_id_empresa_fkey")
+  checklisttemplateitem checklisttemplateitem[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model checklisttemplateitem {
+  idtemplateitem    Int               @id(map: "checklist_template_item_pkey") @default(autoincrement())
+  idtemplate        Int
+  nombre            String?           @db.VarChar(120)
+  orden             Int?
+  foto              Boolean?          @default(false)
+  comentario        Boolean?          @default(false)
+  checklistitem     checklistitem[]
+  checklisttemplate checklisttemplate @relation(fields: [idtemplate], references: [idtemplate], onDelete: Cascade, onUpdate: NoAction, map: "checklist_template_item_id_template_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ordenmodificacion {
+  idmodificacion Int           @id(map: "orden_modificacion_pkey") @default(autoincrement())
+  idorden        Int
+  idusuario      String?       @db.VarChar(20)
+  descripcion    String?
+  fechacreacion  DateTime?     @default(now()) @db.Timestamp(6)
+  servicioorden  servicioorden @relation(fields: [idorden], references: [idorden], onDelete: Cascade, onUpdate: NoAction, map: "orden_modificacion_id_orden_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ordentecnico {
+  id              Int            @id(map: "orden_tecnico_pkey") @default(autoincrement())
+  idorden         Int?
+  idusuario       String?        @db.VarChar(20)
+  rol             String?        @db.VarChar(50)
+  fechaasignacion DateTime?      @default(now()) @db.Timestamp(6)
+  servicioorden   servicioorden? @relation(fields: [idorden], references: [idorden], onDelete: Cascade, onUpdate: NoAction, map: "orden_tecnico_id_orden_fkey")
+  usuario         usuario?       @relation(fields: [idusuario], references: [idusuario], onDelete: NoAction, onUpdate: NoAction, map: "orden_tecnico_id_usuario_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model servicioitem {
+  iditem            Int                 @id(map: "servicio_item_pkey") @default(autoincrement())
+  idempresa         Int?
+  nombre            String?             @db.VarChar(120)
+  descripcion       String?
+  precio            Decimal?            @db.Decimal(10, 2)
+  activo            Boolean?            @default(true)
+  fechacreacion     DateTime?           @default(now()) @db.Timestamp(6)
+  empresa           empresa?            @relation(fields: [idempresa], references: [idempresa], onDelete: NoAction, onUpdate: NoAction, map: "servicio_item_id_empresa_fkey")
+  servicioordenitem servicioordenitem[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model servicioorden {
+  idorden             Int                 @id(map: "servicio_orden_pkey") @default(autoincrement())
+  idempresa           Int
+  idcliente           String?             @db.VarChar(20)
+  idvehiculo          Int?
+  estado              String?             @db.VarChar(30)
+  fechaentrada        DateTime?           @db.Timestamp(6)
+  fechallegadacliente DateTime?           @db.Timestamp(6)
+  total               Decimal?            @db.Decimal(10, 2)
+  fechafin            DateTime?           @db.Timestamp(6)
+  fechacreacion       DateTime?           @default(now()) @db.Timestamp(6)
+  checklist           checklist[]
+  ordenmodificacion   ordenmodificacion[]
+  ordentecnico        ordentecnico[]
+  reporte             reporte[]
+  usuario             usuario?            @relation(fields: [idcliente], references: [idusuario], onDelete: NoAction, onUpdate: NoAction, map: "servicio_orden_id_cliente_fkey")
+  empresa             empresa             @relation(fields: [idempresa], references: [idempresa], onDelete: NoAction, onUpdate: NoAction, map: "servicio_orden_id_empresa_fkey")
+  vehiculo            vehiculo?           @relation(fields: [idvehiculo], references: [idvehiculo], onDelete: NoAction, onUpdate: NoAction, map: "servicio_orden_id_vehiculo_fkey")
+  servicioordenitem   servicioordenitem[]
+
+  @@index([idcliente], map: "idx_orden_cliente")
+  @@index([idempresa], map: "idx_orden_empresa")
+  @@index([idvehiculo], map: "idx_orden_vehiculo")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model servicioordenitem {
+  idordenitem   Int           @id(map: "servicio_orden_items_pkey") @default(autoincrement())
+  idorden       Int
+  iditem        Int?
+  nombreitem    String?       @db.VarChar(120)
+  cantidad      Int?          @default(1)
+  precio        Decimal?      @db.Decimal(10, 2)
+  servicioitem  servicioitem? @relation(fields: [iditem], references: [iditem], onDelete: NoAction, onUpdate: NoAction, map: "servicio_orden_items_id_item_fkey")
+  servicioorden servicioorden @relation(fields: [idorden], references: [idorden], onDelete: Cascade, onUpdate: NoAction, map: "servicio_orden_items_id_orden_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model usuarioclave {
+  idusuario String  @id(map: "usuario_clave_pkey") @db.VarChar(20)
+  clave     String  @db.VarChar(20)
+  usuario   usuario @relation(fields: [idusuario], references: [idusuario], onDelete: NoAction, onUpdate: NoAction, map: "usuario_clave_id_usuario_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model usuariorol {
+  idusuario String  @db.VarChar(20)
+  idrol     Int
+  rol       rol     @relation(fields: [idrol], references: [idrol], onDelete: NoAction, onUpdate: NoAction, map: "usuario_rol_id_rol_fkey")
+  usuario   usuario @relation(fields: [idusuario], references: [idusuario], onDelete: NoAction, onUpdate: NoAction, map: "usuario_rol_id_usuario_fkey")
+
+  @@id([idusuario, idrol], map: "usuario_rol_pkey")
+}
