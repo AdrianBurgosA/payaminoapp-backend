@@ -1,21 +1,21 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { EmpresaService } from './empresa.service';
-import { CreateEmpresaDto } from './dto/empresa.dto';
+import { ConsultaEmpresaDto, CreateEmpresaDto } from './dto/empresa.dto';
 import { JwtAuthGuard } from 'src/common/token/jwt-auth.guard';
 
 @Controller('empresas')
 export class EmpresaController {
   constructor(private empresaService: EmpresaService) {}
 
-  @Post()
+  @Post('mantener')
   @UseGuards(JwtAuthGuard)
   create(@Body() body: CreateEmpresaDto) {
     return this.empresaService.create(body);
   }
 
-  @Get()
+  @Post('consultar')
   @UseGuards(JwtAuthGuard)
-  findAll() {
-    return this.empresaService.findAll();
+  findAll(@Body() body: ConsultaEmpresaDto) {
+    return this.empresaService.findAll(body.team ? body.team : false);
   }
 }

@@ -29,6 +29,7 @@ model empresa {
   telefono          String?             @db.VarChar(30)
   activo            Boolean?            @default(true)
   fechacreacion     DateTime?           @default(now()) @db.Timestamp(6)
+  team              Boolean?
   checklisttemplate checklisttemplate[]
   servicioitem      servicioitem[]
   servicioorden     servicioorden[]
@@ -175,6 +176,7 @@ model servicioorden {
   total               Decimal?            @db.Decimal(10, 2)
   fechafin            DateTime?           @db.Timestamp(6)
   fechacreacion       DateTime?           @default(now()) @db.Timestamp(6)
+  idempresateam       Int?
   checklist           checklist[]
   ordenmodificacion   ordenmodificacion[]
   ordentecnico        ordentecnico[]

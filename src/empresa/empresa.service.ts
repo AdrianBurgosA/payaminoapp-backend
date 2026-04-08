@@ -40,9 +40,34 @@ export class EmpresaService {
     }
   }
 
-  async findAll(): Promise<ApiResponse<empresa[]>> {
+  async findAll(team: boolean): Promise<ApiResponse<empresa[]>> {
     try {
-      const empresas = await this.prisma.empresa.findMany();
+      const empresas = await this.prisma.empresa.findMany({
+        where: { team },
+      });
+      return {
+        success: true,
+        data: empresas,
+      };
+    } catch (error) {
+      this.logger.error(
+        `CONSULTAR EMPRESAS ==>  RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
+        { context: 'Empresa' },
+      );
+      return {
+        success: false,
+        message: 'Ocurrió un error al consultar las empresas.',
+      };
+    }
+  }
+
+  async finEmpresasTeamPayamino(
+    team: boolean,
+  ): Promise<ApiResponse<empresa[]>> {
+    try {
+      const empresas = await this.prisma.empresa.findMany({
+        where: { team: { equals: true } },
+      });
       return {
         success: true,
         data: empresas,

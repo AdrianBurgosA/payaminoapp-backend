@@ -64,4 +64,29 @@ export class OrdenService {
       };
     }
   }
+
+  async findAllOrdenesUsuario(
+    usuario: string,
+    empresa: number,
+    team: number,
+  ): Promise<ApiResponse<servicioorden[]>> {
+    try {
+      const ordenes = await this.prisma.servicioorden.findMany({
+        where: { idcliente: usuario, idempresa: empresa, idempresateam: team },
+      });
+      return {
+        success: true,
+        data: ordenes,
+      };
+    } catch (error) {
+      this.logger.error(
+        `CONSULTAR ORDEN ==>  RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
+        { context: 'Orden' },
+      );
+      return {
+        success: false,
+        message: 'Ocurrió un error al consultar las órdenes.',
+      };
+    }
+  }
 }
