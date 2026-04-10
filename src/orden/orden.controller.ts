@@ -8,7 +8,7 @@ import { OrdenConsultaDto } from 'src/models/orden.dto';
 export class OrdenController {
   constructor(private service: OrdenService) {}
 
-  @Post()
+  @Post("consultar")
   @UseGuards(JwtAuthGuard)
   create(@Body() body: CrearOrdenDto) {
     return this.service.create(body);
@@ -20,9 +20,9 @@ export class OrdenController {
   //   return this.service.findAll();
   // }
   
-  @Post()
+  @Post("mantener")
   @UseGuards(JwtAuthGuard)
   findAll(@Body() body: OrdenConsultaDto) {
-    return this.service.findAllOrdenesUsuario(body.usuario, body.empresa, body.team);
+    return this.service.findAllOrdenesUsuario(body.usuario, body.empresa, body.team, body.historial);
   }
 }

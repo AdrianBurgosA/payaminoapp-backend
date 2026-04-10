@@ -1,7 +1,10 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CrearOrdenDto } from './dto/orden.dto';
+import {
+  ConsultaOrdenesHistorialHomeDto,
+  CrearOrdenDto,
+} from './dto/orden.dto';
 import { ApiResponse } from 'src/models/response.dto';
 import { servicioorden } from '@prisma/client';
 
@@ -69,15 +72,45 @@ export class OrdenService {
     usuario: string,
     empresa: number,
     team: number,
-  ): Promise<ApiResponse<servicioorden[]>> {
+    historial: boolean,
+  ): Promise<ApiResponse<ConsultaOrdenesHistorialHomeDto>> {
     try {
-      const ordenes = await this.prisma.servicioorden.findMany({
-        where: { idcliente: usuario, idempresa: empresa, idempresateam: team },
-      });
-      return {
-        success: true,
-        data: ordenes,
-      };
+      if (historial) {
+        const ordenes = await this.prisma.servicioorden.findMany({
+          where: {
+            idcliente: usuario,
+            idempresa: empresa,
+            idempresateam: team,
+          },
+        });
+        return {
+          success: true,
+          data: { ordenActiva: null, ordenes: ordenes },
+        };
+      } else {
+        const ordenes = await this.prisma.servicioorden.findMany({
+          where: {
+            idcliente: usuario,
+            idempresa: empresa,
+            idempresateam: team,
+          },
+        });
+
+        const ordenActiva =
+          ordenes.find((orden) => orden.estado === 'EN PROCESO') ?? null;
+
+          const ordenesNoActivas = ordenes.filter(
+          (orden) => orden.estado !== 'EN PROCESO',
+        );
+
+        return {
+          success: true,
+          data: {
+            ordenActiva,
+            ordenes: ordenesNoActivas.slice(0, 5),
+          },
+        };
+      }
     } catch (error) {
       this.logger.error(
         `CONSULTAR ORDEN ==>  RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
