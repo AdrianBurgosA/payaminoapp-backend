@@ -77,7 +77,7 @@ export class AuthService {
         success: true,
         data: loginResponse,
       };
-    } catch (error) {
+    } catch (error:any) {
       this.logger.error(
         `LOGIN ==> REQUEST: ${JSON.stringify(data)} | RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
         { context: 'Login' },
