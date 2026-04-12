@@ -81,6 +81,7 @@ model vehiculo {
   modelo        String?         @db.VarChar(50)
   color         String?         @db.VarChar(30)
   fechacreacion DateTime?       @default(now()) @db.Timestamp(6)
+  idempresa     Int?
   servicioorden servicioorden[]
   usuario       usuario?        @relation(fields: [idusuario], references: [idusuario], onDelete: NoAction, onUpdate: NoAction, map: "vehiculo_id_cliente_fkey")
 }

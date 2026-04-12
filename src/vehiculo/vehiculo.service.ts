@@ -19,7 +19,7 @@ export class VehiculoService {
         message: 'Empresa creada exitosamente.',
         data : vehiculoCreado
       };
-    } catch (error) {
+    } catch (error : any) {
       this.logger.error(
         `CREAR VEHICULO ==> REQUEST: ${JSON.stringify(data)} | RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
         { context: 'Vehiculo' },
@@ -39,7 +39,7 @@ export class VehiculoService {
           success: true,
           data: vehiculos,
         };
-      } catch (error) {
+      } catch (error : any) {
         this.logger.error(
           `CONSULTAR VEHICULOS ==>  RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
           { context: 'Vehiculo' },

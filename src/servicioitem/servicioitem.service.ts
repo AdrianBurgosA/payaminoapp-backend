@@ -11,14 +11,18 @@ export class ServicioitemService {
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
-  async findAll(): Promise<ApiResponse<servicioitem[]>> {
+  async findAll(idempresa: number): Promise<ApiResponse<servicioitem[]>> {
     try {
-      const servicioItems = await this.prisma.servicioitem.findMany();
+      const servicioItems = await this.prisma.servicioitem.findMany({
+        where: {
+          idempresa,
+        },
+      });
       return {
         success: true,
         data: servicioItems,
       };
-    } catch (error) {
+    } catch (error:any) {
       this.logger.error(
         `CONSULTAR SERVICIOS ==>  RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
         { context: 'ServicioItem' },
@@ -47,7 +51,7 @@ export class ServicioitemService {
         success: true,
         data: servicioItem,
       };
-    } catch (error) {
+    } catch (error:any) {
       this.logger.error(
         `CONSULTAR SERVICIO ${iditem} ==> RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
         { context: 'ServicioItem' },

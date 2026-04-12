@@ -73,7 +73,6 @@ export class OrdenService {
     usuario: string,
     empresa: number,
     team: number,
-    historial: boolean,
   ): Promise<ApiResponse<ConsultaOrdenesHistorialHomeDto>> {
     try {
       const ordenes = await this.prisma.servicioorden.findMany({
@@ -103,27 +102,35 @@ export class OrdenService {
         placa: item.vehiculo?.placa ?? '',
       }));
 
-      if (historial) {
-        return {
-          success: true,
-          data: { ordenActiva: null, ordenes: ordenesMap },
-        };
-      } else {
-        const ordenActiva =
-          ordenesMap.find((orden) => orden.estado === 'EN PROCESO') ?? null;
+      const ordenActiva =
+        ordenesMap.find((orden) => orden.estado === 'EN PROCESO') ?? null;
 
-        const ordenesNoActivas = ordenesMap.filter(
-          (orden) => orden.estado !== 'EN PROCESO',
-        );
+      const ordenesNoActivas = ordenesMap.filter(
+        (orden) => orden.estado !== 'EN PROCESO',
+      );
 
-        return {
-          success: true,
-          data: {
-            ordenActiva,
-            ordenes: ordenesNoActivas.slice(0, 5),
-          },
-        };
-      }
+      const servicioItems = await this.prisma.servicioitem.findMany({
+        where: {
+          idempresa: team,
+        },
+      });
+
+      const vehiculos = await this.prisma.vehiculo.findMany({
+        where: {
+          idempresa: team,
+          idusuario: usuario,
+        },
+      });
+
+      return {
+        success: true,
+        data: {
+          ordenActiva,
+          ordenes: ordenesNoActivas,
+          items: servicioItems,
+          vehiculos
+        },
+      };
     } catch (error: any) {
       this.logger.error(
         `CONSULTAR ORDEN ==>  RESPONSE ERROR: ${error.meta?.target ?? error.message}`,

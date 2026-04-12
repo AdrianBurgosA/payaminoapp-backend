@@ -23,6 +23,6 @@ export class OrdenController {
   @Post("consultar")
   @UseGuards(JwtAuthGuard)
   findAll(@Body() body: OrdenConsultaDto) {
-    return this.service.findAllOrdenesUsuario(body.usuario, body.empresa, body.team, body.historial);
+    return this.service.findAllOrdenesUsuario(body.usuario, body.empresa, body.team);
   }
 }

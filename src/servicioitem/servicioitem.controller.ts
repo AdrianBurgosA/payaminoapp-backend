@@ -6,11 +6,11 @@ import { ServicioitemService } from './servicioitem.service';
 export class ServicioitemController {
   constructor(private servicioItem: ServicioitemService) {}
 
-  @Get()
-  @UseGuards(JwtAuthGuard)
-  findAll() {
-    return this.servicioItem.findAll();
-  }
+  // @Get()
+  // @UseGuards(JwtAuthGuard)
+  // findAll() {
+  //   return this.servicioItem.findAll();
+  // }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
