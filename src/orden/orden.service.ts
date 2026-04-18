@@ -122,13 +122,28 @@ export class OrdenService {
         },
       });
 
+      const empresaTeam = await this.prisma.empresa.findUnique({
+        where: { team: true, idempresa: team },
+      });
+
+      const combos = empresaTeam?.tienecombos
+        ? await this.prisma.combo.findMany({
+            where: {
+              idempresa: team,
+            },
+          })
+        : [];
+
+      const combosResponse = this.armarCombos(combos);
+
       return {
         success: true,
         data: {
           ordenActiva,
           ordenes: ordenesNoActivas,
           items: servicioItems,
-          vehiculos
+          vehiculos,
+          combos: combosResponse,
         },
       };
     } catch (error: any) {
@@ -141,5 +156,22 @@ export class OrdenService {
         message: 'Ocurrió un error al consultar las órdenes.',
       };
     }
+  }
+
+  armarCombos(combos: any[]) : any{
+    let combosArmados: any[] = [];
+    combos.forEach(element => {
+      let comboItems = this.prisma.comboitems.findMany({
+        where: {
+          idcombo: element.idcombo,
+        },
+      });
+      combosArmados.push({
+        combo: element,
+        items: comboItems,
+      });
+
+    });
+    return combosArmados;
   }
 }

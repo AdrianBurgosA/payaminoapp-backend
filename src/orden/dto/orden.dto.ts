@@ -15,6 +15,7 @@ export class ConsultaOrdenesHistorialHomeDto {
   ordenes: OrdenDto[] = [];
   items: servicioitem[] = [];
   vehiculos: vehiculo[] = [];
+  combos: any[] = [];
 }
 
 export class OrdenDto {
