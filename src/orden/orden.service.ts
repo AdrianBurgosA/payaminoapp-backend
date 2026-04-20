@@ -122,7 +122,7 @@ export class OrdenService {
         },
       });
 
-      const empresaTeam = await this.prisma.empresa.findUnique({
+      const empresaTeam = await this.prisma.empresa.findFirst({
         where: { team: true, idempresa: team },
       });
 
