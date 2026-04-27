@@ -103,7 +103,7 @@ export class OrdenService {
       }));
 
       const ordenActiva =
-        ordenesMap.find((orden) => orden.estado === 'EN PROCESO') ?? null;
+        ordenesMap.find((orden) => orden.estado === 'EN PROCESO' || orden.estado === 'CREADO') ?? null;
 
       const ordenesNoActivas = ordenesMap.filter(
         (orden) => orden.estado !== 'EN PROCESO',
