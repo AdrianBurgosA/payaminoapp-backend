@@ -53,3 +53,6 @@ ios/
 
 # Local configuration
 local.properties
+
+# package-lock.json
+package-lock.json
