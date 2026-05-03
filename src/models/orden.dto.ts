@@ -1,6 +1,5 @@
 import { RequestBase } from './request.dto';
 
 export class OrdenConsultaDto extends RequestBase {
-    team: number;
-    historial: boolean;
+    team: number = 0;
 }

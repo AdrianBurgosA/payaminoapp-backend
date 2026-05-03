@@ -11,7 +11,7 @@ export class CrearOrdenDto {
 }
 
 export class ConsultaOrdenesHistorialHomeDto {
-  ordenActiva: OrdenDto | null = null;
+  ordenActiva: OrdenDto | OrdenDto[] | null = null;
   ordenes: OrdenDto[] = [];
   items: servicioitem[] = [];
   vehiculos: vehiculo[] = [];

@@ -8,6 +8,7 @@ import {
 } from './dto/orden.dto';
 import { ApiResponse } from 'src/models/response.dto';
 import { servicioorden } from '@prisma/client';
+import { ESTADOS_ORDEN_ENUM, ROLES_ENUM } from 'src/common/utils/EnumConstants';
 
 @Injectable()
 export class OrdenService {
@@ -73,18 +74,37 @@ export class OrdenService {
     usuario: string,
     empresa: number,
     team: number,
+    rol: number,
   ): Promise<ApiResponse<ConsultaOrdenesHistorialHomeDto>> {
     try {
-      const ordenes = await this.prisma.servicioorden.findMany({
-        where: {
-          idcliente: usuario,
-          idempresa: empresa,
-          idempresateam: team,
-        },
-        include: {
-          vehiculo: true,
-        },
-      });
+      let ordenes: any = [];
+
+      if (rol === ROLES_ENUM.CLIENTE) {
+        ordenes = await this.prisma.servicioorden.findMany({
+          where: {
+            idcliente: usuario,
+            idempresa: empresa,
+            idempresateam: team,
+          },
+          include: {
+            vehiculo: true,
+          },
+        });
+      } else {
+        ordenes = await this.prisma.servicioorden.findMany({
+          where: {
+            idempresa: empresa,
+            idempresateam: team,
+            ordentecnico: {
+              some: {},
+            },
+          },
+          include: {
+            vehiculo: true,
+            ordentecnico: true,
+          },
+        });
+      }
 
       const ordenesMap: OrdenDto[] = ordenes.map((item) => ({
         idorden: item.idorden,
@@ -102,11 +122,16 @@ export class OrdenService {
         placa: item.vehiculo?.placa ?? '',
       }));
 
+      const esOrdenActiva = (estado: string) =>
+        estado === ESTADOS_ORDEN_ENUM.EN_PROCESO || estado === ESTADOS_ORDEN_ENUM.CREADO;
+
       const ordenActiva =
-        ordenesMap.find((orden) => orden.estado === 'EN PROCESO' || orden.estado === 'CREADO') ?? null;
+        rol === ROLES_ENUM.CLIENTE
+          ? (ordenesMap.find((orden) => esOrdenActiva(orden.estado)) ?? null)
+          : ordenesMap.filter((orden) => esOrdenActiva(orden.estado));
 
       const ordenesNoActivas = ordenesMap.filter(
-        (orden) => orden.estado !== 'EN PROCESO',
+        (orden) => orden.estado !== ESTADOS_ORDEN_ENUM.EN_PROCESO,
       );
 
       const servicioItems = await this.prisma.servicioitem.findMany({
@@ -158,9 +183,9 @@ export class OrdenService {
     }
   }
 
-  armarCombos(combos: any[]) : any{
+  armarCombos(combos: any[]): any {
     let combosArmados: any[] = [];
-    combos.forEach(element => {
+    combos.forEach((element) => {
       let comboItems = this.prisma.comboitems.findMany({
         where: {
           idcombo: element.idcombo,
@@ -170,7 +195,6 @@ export class OrdenService {
         combo: element,
         items: comboItems,
       });
-
     });
     return combosArmados;
   }
