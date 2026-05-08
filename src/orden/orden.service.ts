@@ -78,6 +78,7 @@ export class OrdenService {
   ): Promise<ApiResponse<ConsultaOrdenesHistorialHomeDto>> {
     try {
       let ordenes: any = [];
+      let ordenesActivas: OrdenDto[] = [];
 
       if (rol === ROLES_ENUM.CLIENTE) {
         ordenes = await this.prisma.servicioorden.findMany({
@@ -95,9 +96,6 @@ export class OrdenService {
           where: {
             idempresa: empresa,
             idempresateam: team,
-            ordentecnico: {
-              some: {},
-            },
           },
           include: {
             vehiculo: true,
@@ -120,18 +118,28 @@ export class OrdenService {
         vehiculo:
           (item.vehiculo?.marca ?? '') + ' ' + (item.vehiculo?.modelo ?? ''),
         placa: item.vehiculo?.placa ?? '',
+        ordentecnico: item.ordentecnico ?? [],
       }));
 
       const esOrdenActiva = (estado: string) =>
-        estado === ESTADOS_ORDEN_ENUM.EN_PROCESO || estado === ESTADOS_ORDEN_ENUM.CREADO;
+        estado === ESTADOS_ORDEN_ENUM.EN_PROCESO ||
+        estado === ESTADOS_ORDEN_ENUM.CREADO;
 
       const misOrdenes =
         rol === ROLES_ENUM.CLIENTE
           ? this.encontrarOrdenActiva(ordenesMap)
-          : ordenesMap.filter((orden) => esOrdenActiva(orden.estado));
+          : ordenesMap.filter((orden) =>
+              orden.ordentecnico.some((t) => t.idusuario === usuario),
+            );
 
       const ordenesNoActivas = ordenesMap.filter(
         (orden) => orden.estado !== ESTADOS_ORDEN_ENUM.EN_PROCESO,
+      );
+
+      ordenesActivas = ordenesMap.filter(
+        (orden) =>
+          esOrdenActiva(orden.estado) &&
+          (orden.ordentecnico?.length ?? 0) === 0,
       );
 
       const servicioItems = await this.prisma.servicioitem.findMany({
@@ -165,6 +173,7 @@ export class OrdenService {
         success: true,
         data: {
           misOrdenes,
+          ordenesActivas,
           ordenes: ordenesNoActivas,
           items: servicioItems,
           vehiculos,
@@ -184,12 +193,14 @@ export class OrdenService {
   }
 
   encontrarOrdenActiva(ordenes: OrdenDto[]): OrdenDto[] | [] {
-    const arregloOrden:OrdenDto[] = [];
-    const ordenActiva = ordenes.find((orden) =>
-      orden.estado === ESTADOS_ORDEN_ENUM.EN_PROCESO || orden.estado === ESTADOS_ORDEN_ENUM.CREADO,
+    const arregloOrden: OrdenDto[] = [];
+    const ordenActiva = ordenes.find(
+      (orden) =>
+        orden.estado === ESTADOS_ORDEN_ENUM.EN_PROCESO ||
+        orden.estado === ESTADOS_ORDEN_ENUM.CREADO,
     );
 
-    if(ordenActiva){
+    if (ordenActiva) {
       arregloOrden.push(ordenActiva);
     }
 

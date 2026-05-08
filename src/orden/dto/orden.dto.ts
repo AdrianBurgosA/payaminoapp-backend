@@ -17,6 +17,7 @@ export class CrearOrdenDto {
 
 export class ConsultaOrdenesHistorialHomeDto {
   misOrdenes: OrdenDto[] = [];
+  ordenesActivas: OrdenDto[] = [];
   ordenes: OrdenDto[] = [];
   items: servicioitem[] = [];
   vehiculos: vehiculo[] = [];
@@ -36,4 +37,5 @@ export class OrdenDto {
   fechacreacion: Date = new Date();
   vehiculo?: string = '';
   placa?: string = '';
+  ordentecnico: any[] = [];
 }
