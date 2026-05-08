@@ -1,4 +1,9 @@
-import { servicioitem, servicioorden, servicioordenitem, vehiculo } from '@prisma/client';
+import {
+  servicioitem,
+  servicioorden,
+  servicioordenitem,
+  vehiculo,
+} from '@prisma/client';
 
 export class CrearOrdenDto {
   idempresa: number = 0;
@@ -11,7 +16,7 @@ export class CrearOrdenDto {
 }
 
 export class ConsultaOrdenesHistorialHomeDto {
-  ordenActiva: OrdenDto | OrdenDto[] | null = null;
+  misOrdenes: OrdenDto[] = [];
   ordenes: OrdenDto[] = [];
   items: servicioitem[] = [];
   vehiculos: vehiculo[] = [];

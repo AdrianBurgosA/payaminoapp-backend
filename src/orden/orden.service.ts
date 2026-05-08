@@ -125,9 +125,9 @@ export class OrdenService {
       const esOrdenActiva = (estado: string) =>
         estado === ESTADOS_ORDEN_ENUM.EN_PROCESO || estado === ESTADOS_ORDEN_ENUM.CREADO;
 
-      const ordenActiva =
+      const misOrdenes =
         rol === ROLES_ENUM.CLIENTE
-          ? (ordenesMap.find((orden) => esOrdenActiva(orden.estado)) ?? null)
+          ? this.encontrarOrdenActiva(ordenesMap)
           : ordenesMap.filter((orden) => esOrdenActiva(orden.estado));
 
       const ordenesNoActivas = ordenesMap.filter(
@@ -164,7 +164,7 @@ export class OrdenService {
       return {
         success: true,
         data: {
-          ordenActiva,
+          misOrdenes,
           ordenes: ordenesNoActivas,
           items: servicioItems,
           vehiculos,
@@ -181,6 +181,19 @@ export class OrdenService {
         message: 'Ocurrió un error al consultar las órdenes.',
       };
     }
+  }
+
+  encontrarOrdenActiva(ordenes: OrdenDto[]): OrdenDto[] | [] {
+    const arregloOrden:OrdenDto[] = [];
+    const ordenActiva = ordenes.find((orden) =>
+      orden.estado === ESTADOS_ORDEN_ENUM.EN_PROCESO || orden.estado === ESTADOS_ORDEN_ENUM.CREADO,
+    );
+
+    if(ordenActiva){
+      arregloOrden.push(ordenActiva);
+    }
+
+    return arregloOrden;
   }
 
   armarCombos(combos: any[]): any {
