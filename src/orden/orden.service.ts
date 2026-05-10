@@ -119,7 +119,7 @@ export class OrdenService {
           (item.vehiculo?.marca ?? '') + ' ' + (item.vehiculo?.modelo ?? ''),
         placa: item.vehiculo?.placa ?? '',
         ordentecnico: item.ordentecnico ?? [],
-      }));
+      })).sort((a, b) => b.idorden - a.idorden);
 
       const esOrdenActiva = (estado: string) =>
         estado === ESTADOS_ORDEN_ENUM.EN_PROCESO ||
@@ -136,12 +136,11 @@ export class OrdenService {
         (orden) => orden.estado !== ESTADOS_ORDEN_ENUM.EN_PROCESO,
       );
 
-      ordenesActivas = ordenesMap.filter(
+      ordenesActivas = rol === ROLES_ENUM.EMPLEADO ? ordenesMap.filter(
         (orden) =>
           esOrdenActiva(orden.estado) &&
           (orden.ordentecnico?.length ?? 0) === 0,
-      );
-
+      ) : [];
       const servicioItems = await this.prisma.servicioitem.findMany({
         where: {
           idempresa: team,
