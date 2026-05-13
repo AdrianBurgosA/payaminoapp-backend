@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { ServicioitemModule } from './servicioitem/servicioitem.module';
 import { VehiculoModule } from './vehiculo/vehiculo.module';
 import { OrdenModule } from './orden/orden.module';
+import { OrdentecnicoModule } from './ordentecnico/ordentecnico.module';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { OrdenModule } from './orden/orden.module';
     AuthModule,
     ServicioitemModule,
     VehiculoModule,
-    OrdenModule
+    OrdenModule,
+    OrdentecnicoModule
   ],
   controllers: [AppController],
   providers: [AppService],

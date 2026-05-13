@@ -39,3 +39,8 @@ export class OrdenDto {
   placa?: string = '';
   ordentecnico: any[] = [];
 }
+
+export class AsignarOrdenDto{
+  idorden: number = 0;
+  idusuario: string = '';
+}

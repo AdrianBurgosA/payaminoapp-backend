@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
+  AsignarOrdenDto,
   ConsultaOrdenesHistorialHomeDto,
   CrearOrdenDto,
   OrdenDto,
@@ -104,22 +105,24 @@ export class OrdenService {
         });
       }
 
-      const ordenesMap: OrdenDto[] = ordenes.map((item) => ({
-        idorden: item.idorden,
-        idempresa: item.idempresa,
-        idcliente: item.idcliente ?? '',
-        idvehiculo: item.idvehiculo ?? 0,
-        estado: item.estado ?? '',
-        fechaentrada: item.fechaentrada ?? new Date(),
-        fechallegadacliente: item.fechallegadacliente ?? new Date(),
-        total: item.total,
-        fechafin: item.fechafin ?? new Date(),
-        fechacreacion: item.fechacreacion ?? new Date(),
-        vehiculo:
-          (item.vehiculo?.marca ?? '') + ' ' + (item.vehiculo?.modelo ?? ''),
-        placa: item.vehiculo?.placa ?? '',
-        ordentecnico: item.ordentecnico ?? [],
-      })).sort((a, b) => b.idorden - a.idorden);
+      const ordenesMap: OrdenDto[] = ordenes
+        .map((item) => ({
+          idorden: item.idorden,
+          idempresa: item.idempresa,
+          idcliente: item.idcliente ?? '',
+          idvehiculo: item.idvehiculo ?? 0,
+          estado: item.estado ?? '',
+          fechaentrada: item.fechaentrada ?? new Date(),
+          fechallegadacliente: item.fechallegadacliente ?? new Date(),
+          total: item.total,
+          fechafin: item.fechafin ?? new Date(),
+          fechacreacion: item.fechacreacion ?? new Date(),
+          vehiculo:
+            (item.vehiculo?.marca ?? '') + ' ' + (item.vehiculo?.modelo ?? ''),
+          placa: item.vehiculo?.placa ?? '',
+          ordentecnico: item.ordentecnico ?? [],
+        }))
+        .sort((a, b) => b.idorden - a.idorden);
 
       const esOrdenActiva = (estado: string) =>
         estado === ESTADOS_ORDEN_ENUM.EN_PROCESO ||
@@ -136,11 +139,14 @@ export class OrdenService {
         (orden) => orden.estado !== ESTADOS_ORDEN_ENUM.EN_PROCESO,
       );
 
-      ordenesActivas = rol === ROLES_ENUM.EMPLEADO ? ordenesMap.filter(
-        (orden) =>
-          esOrdenActiva(orden.estado) &&
-          (orden.ordentecnico?.length ?? 0) === 0,
-      ) : [];
+      ordenesActivas =
+        rol === ROLES_ENUM.EMPLEADO
+          ? ordenesMap.filter(
+              (orden) =>
+                esOrdenActiva(orden.estado) &&
+                (orden.ordentecnico?.length ?? 0) === 0,
+            )
+          : [];
       const servicioItems = await this.prisma.servicioitem.findMany({
         where: {
           idempresa: team,
