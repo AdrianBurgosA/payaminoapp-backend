@@ -13,6 +13,7 @@ export class CrearOrdenDto {
   fechaentrada: string = '';
   items: servicioordenitem[] = [];
   total: number = 0;
+  team: number = 0;
 }
 
 export class ConsultaOrdenesHistorialHomeDto {

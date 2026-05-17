@@ -28,6 +28,7 @@ export class OrdenService {
           estado: 'CREADO',
           fechaentrada: new Date(data.fechaentrada),
           total: data.total,
+          idempresateam: data.team
         },
       });
       for (const item of data.items) {
@@ -184,6 +185,30 @@ export class OrdenService {
           vehiculos,
           combos: combosResponse,
         },
+      };
+    } catch (error: any) {
+      this.logger.error(
+        `CONSULTAR ORDEN ==>  RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
+        { context: 'Orden' },
+      );
+      return {
+        success: false,
+        message: 'Ocurrió un error al consultar las órdenes.',
+      };
+    }
+  }
+
+  async findOneOrden(idOrden: number): Promise<ApiResponse<OrdenDto>> {
+    let orden: any = [];
+    try {
+      orden = await this.prisma.servicioorden.findUnique({
+        where: {
+          idorden: idOrden,
+        },
+      });
+      return {
+        success: true,
+        data: orden,
       };
     } catch (error: any) {
       this.logger.error(
