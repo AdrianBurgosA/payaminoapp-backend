@@ -205,10 +205,18 @@ export class OrdenService {
         where: {
           idorden: idOrden,
         },
+        include: {
+          vehiculo: true,
+        }
       });
+
+      let ordenNueva : OrdenDto = orden as OrdenDto;
+      const vehiculo = orden.vehiculo;
+      ordenNueva.vehiculo = (vehiculo?.marca ?? '') + ' ' + (vehiculo?.modelo ?? '');
+      ordenNueva.placa = (vehiculo?.placa ?? '');
       return {
         success: true,
-        data: orden,
+        data: ordenNueva,
       };
     } catch (error: any) {
       this.logger.error(

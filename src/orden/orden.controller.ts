@@ -20,9 +20,9 @@ export class OrdenController {
     return this.service.findAllOrdenesUsuario(body.usuario, body.empresa, body.team, body.rol);
   }
   
-  @Post("consultar/:id")
+  @Post("consultar/orden")
   @UseGuards(JwtAuthGuard)
-  findOne(@Param("id") id: string) {
-    return this.service.findOneOrden(Number(id));
+  findOne(@Body() body: OrdenConsultaDto) {
+    return this.service.findOneOrden(body.idOrden);
   }
 }
