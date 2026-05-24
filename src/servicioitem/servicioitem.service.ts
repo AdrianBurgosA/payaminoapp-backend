@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { servicioitem } from '@prisma/client';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { LogService } from 'src/log/log.service';
 import { ApiResponse } from 'src/models/response.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -8,10 +9,10 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class ServicioitemService {
   constructor(
     private prisma: PrismaService,
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private log: LogService,
   ) {}
 
-  async findAll(idempresa: number): Promise<ApiResponse<servicioitem[]>> {
+  async findAll(idempresa: number, usuario: string): Promise<ApiResponse<servicioitem[]>> {
     try {
       const servicioItems = await this.prisma.servicioitem.findMany({
         where: {
@@ -23,9 +24,10 @@ export class ServicioitemService {
         data: servicioItems,
       };
     } catch (error:any) {
-      this.logger.error(
+      this.log.error("user",  
         `CONSULTAR SERVICIOS ==>  RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
-        { context: 'ServicioItem' },
+        'ServicioItem',
+        error.message
       );
       return {
         success: false,
@@ -34,7 +36,7 @@ export class ServicioitemService {
     }
   }
 
-  async findOne(iditem: number): Promise<ApiResponse<servicioitem>> {
+  async findOne(iditem: number, usuario: string): Promise<ApiResponse<servicioitem>> {
     try {
       const servicioItem = await this.prisma.servicioitem.findUnique({
         where: { iditem },
@@ -52,9 +54,10 @@ export class ServicioitemService {
         data: servicioItem,
       };
     } catch (error:any) {
-      this.logger.error(
+      this.log.error("user",  
         `CONSULTAR SERVICIO ${iditem} ==> RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
-        { context: 'ServicioItem' },
+        'ServicioItem',
+        error.message
       );
       return {
         success: false,

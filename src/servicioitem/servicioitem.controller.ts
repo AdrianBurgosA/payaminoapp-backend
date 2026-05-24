@@ -15,6 +15,6 @@ export class ServicioitemController {
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   findOne(@Param('id') id: string) {
-    return this.servicioItem.findOne(+id);
+    return this.servicioItem.findOne(+id, 'user');
   }
 }

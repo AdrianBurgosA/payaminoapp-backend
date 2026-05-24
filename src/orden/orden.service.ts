@@ -10,12 +10,13 @@ import {
 import { ApiResponse } from 'src/models/response.dto';
 import { servicioorden } from '@prisma/client';
 import { ESTADOS_ORDEN_ENUM, ROLES_ENUM } from 'src/common/utils/EnumConstants';
+import { LogService } from 'src/log/log.service';
 
 @Injectable()
 export class OrdenService {
   constructor(
     private prisma: PrismaService,
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private log: LogService,
   ) {}
 
   async create(data: CrearOrdenDto): Promise<ApiResponse> {
@@ -41,9 +42,9 @@ export class OrdenService {
         message: 'Orden creada exitosamente.',
       };
     } catch (error: any) {
-      this.logger.error(
+      this.log.error("user",  
         `CREAR ORDEN ==> REQUEST: ${JSON.stringify(data)} | RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
-        { context: 'Orden' },
+        'Orden'
       );
 
       return {
@@ -61,9 +62,10 @@ export class OrdenService {
         data: ordenes,
       };
     } catch (error: any) {
-      this.logger.error(
+      this.log.error("user",  
         `CONSULTAR ORDEN ==>  RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
-        { context: 'Orden' },
+        'Orden',
+        error.message
       );
       return {
         success: false,
@@ -187,9 +189,10 @@ export class OrdenService {
         },
       };
     } catch (error: any) {
-      this.logger.error(
+      this.log.error("user",  
         `CONSULTAR ORDEN ==>  RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
-        { context: 'Orden' },
+        'Orden',
+        error.message
       );
       return {
         success: false,
@@ -219,9 +222,10 @@ export class OrdenService {
         data: ordenNueva,
       };
     } catch (error: any) {
-      this.logger.error(
+      this.log.error("user",  
         `CONSULTAR ORDEN ==>  RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
-        { context: 'Orden' },
+        'Orden',
+        error.message
       );
       return {
         success: false,

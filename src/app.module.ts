@@ -14,6 +14,8 @@ import { ServicioitemModule } from './servicioitem/servicioitem.module';
 import { VehiculoModule } from './vehiculo/vehiculo.module';
 import { OrdenModule } from './orden/orden.module';
 import { OrdentecnicoModule } from './ordentecnico/ordentecnico.module';
+import { ChecklistModule } from './checklist/checklist.module';
+import { LogService } from './log/log.service';
 
 @Module({
   imports: [
@@ -27,7 +29,8 @@ import { OrdentecnicoModule } from './ordentecnico/ordentecnico.module';
     ServicioitemModule,
     VehiculoModule,
     OrdenModule,
-    OrdentecnicoModule
+    OrdentecnicoModule,
+    ChecklistModule
   ],
   controllers: [AppController],
   providers: [AppService],

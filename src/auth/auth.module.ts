@@ -5,6 +5,7 @@ import { AuthController } from './auth.controller';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from 'src/common/token/jwt.strategy';
+import { LogService } from 'src/log/log.service';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { JwtStrategy } from 'src/common/token/jwt.strategy';
       signOptions: { expiresIn: '7d' },
     }),
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, LogService],
   controllers: [AuthController],
   exports: [JwtModule],                  
 })

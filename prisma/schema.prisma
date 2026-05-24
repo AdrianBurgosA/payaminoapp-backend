@@ -115,26 +115,30 @@ model checklistitem {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model checklisttemplate {
-  idtemplate            Int                     @id(map: "checklist_template_pkey") @default(autoincrement())
-  idempresa             Int?
-  nombre                String?                 @db.VarChar(120)
-  descripcion           String?
-  fechacreacion         DateTime?               @default(now()) @db.Timestamp(6)
-  checklist             checklist[]
-  empresa               empresa?                @relation(fields: [idempresa], references: [idempresa], onDelete: NoAction, onUpdate: NoAction, map: "checklist_template_id_empresa_fkey")
-  checklisttemplateitem checklisttemplateitem[]
+  idtemplate             Int                      @id(map: "checklist_template_pkey") @default(autoincrement())
+  idempresa              Int?
+  nombre                 String?                  @db.VarChar(120)
+  descripcion            String?
+  fechacreacion          DateTime?                @default(now()) @db.Timestamp(6)
+  team                   Int
+  checklist              checklist[]
+  empresa                empresa?                 @relation(fields: [idempresa], references: [idempresa], onDelete: NoAction, onUpdate: NoAction, map: "checklist_template_id_empresa_fkey")
+  checklisttemplategroup checklisttemplategroup[]
+  checklisttemplateitem  checklisttemplateitem[]
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model checklisttemplateitem {
-  idtemplateitem    Int               @id(map: "checklist_template_item_pkey") @default(autoincrement())
-  idtemplate        Int
-  nombre            String?           @db.VarChar(120)
-  orden             Int?
-  foto              Boolean?          @default(false)
-  comentario        Boolean?          @default(false)
-  checklistitem     checklistitem[]
-  checklisttemplate checklisttemplate @relation(fields: [idtemplate], references: [idtemplate], onDelete: Cascade, onUpdate: NoAction, map: "checklist_template_item_id_template_fkey")
+  idtemplateitem         Int                     @id(map: "checklist_template_item_pkey") @default(autoincrement())
+  idtemplate             Int
+  nombre                 String?                 @db.VarChar(120)
+  orden                  Int?
+  foto                   Boolean?                @default(false)
+  comentario             Boolean?                @default(false)
+  idtemplategroup        Int?
+  checklistitem          checklistitem[]
+  checklisttemplategroup checklisttemplategroup? @relation(fields: [idtemplategroup], references: [idtemplategroup], onUpdate: NoAction, map: "checklist_template_item_id_group_fkey")
+  checklisttemplate      checklisttemplate       @relation(fields: [idtemplate], references: [idtemplate], onDelete: Cascade, onUpdate: NoAction, map: "checklist_template_item_id_template_fkey")
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -253,4 +257,25 @@ model comboitems {
   servicioitem servicioitem @relation(fields: [iditem], references: [iditem], onDelete: NoAction, onUpdate: NoAction, map: "combo_items_id_items_fkey")
 
   @@id([idcombo, iditem], map: "combo_items_pkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model checklisttemplategroup {
+  idtemplategroup       Int                     @id(map: "checklist_template_group_pkey") @default(autoincrement())
+  idtemplate            Int
+  nombre                String                  @db.VarChar(120)
+  orden                 Int?
+  checklisttemplate     checklisttemplate       @relation(fields: [idtemplate], references: [idtemplate], onDelete: Cascade, onUpdate: NoAction, map: "checklist_template_group_id_template_fkey")
+  checklisttemplateitem checklisttemplateitem[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model log {
+  idlog     Int       @id @default(autoincrement())
+  usuario   String?   @db.VarChar(20)
+  nivel     String    @db.VarChar(10)
+  contexto  String?   @db.VarChar(120)
+  mensaje   String
+  excepcion String?
+  fecha     DateTime? @default(now()) @db.Timestamp(6)
 }

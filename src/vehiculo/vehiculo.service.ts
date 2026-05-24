@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { vehiculo } from '@prisma/client';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { LogService } from 'src/log/log.service';
 import { ApiResponse } from 'src/models/response.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -8,7 +9,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class VehiculoService {
   constructor(
     private prisma: PrismaService,
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private log: LogService,
   ) {}
 
   async create(data: vehiculo): Promise<ApiResponse<vehiculo>> {
@@ -20,9 +21,10 @@ export class VehiculoService {
         data : vehiculoCreado
       };
     } catch (error : any) {
-      this.logger.error(
+      this.log.error("user",  
         `CREAR VEHICULO ==> REQUEST: ${JSON.stringify(data)} | RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
-        { context: 'Vehiculo' },
+        'Vehiculo',
+        error.message
       );
 
       return {
@@ -40,9 +42,10 @@ export class VehiculoService {
           data: vehiculos,
         };
       } catch (error : any) {
-        this.logger.error(
+        this.log.error("user",  
           `CONSULTAR VEHICULOS ==>  RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
-          { context: 'Vehiculo' },
+          'Vehiculo',
+          error.message
         );
         return {
           success: false,

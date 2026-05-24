@@ -5,12 +5,13 @@ import { ApiResponse } from 'src/models/response.dto';
 import { empresa } from '@prisma/client';
 import { Logger } from 'winston';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { LogService } from 'src/log/log.service';
 
 @Injectable()
 export class EmpresaService {
   constructor(
     private prisma: PrismaService,
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private log: LogService,
   ) {}
 
   async create(data: CreateEmpresaDto): Promise<ApiResponse> {
@@ -27,10 +28,10 @@ export class EmpresaService {
         success: true,
         message: 'Empresa creada exitosamente.',
       };
-    } catch (error) {
-      this.logger.error(
+    } catch (error : any) {
+      this.log.error("user",  
         `CREAR EMPRESA ==> REQUEST: ${JSON.stringify(data)} | RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
-        { context: 'Empresa' },
+        'Empresa'
       );
 
       return {
@@ -49,10 +50,10 @@ export class EmpresaService {
         success: true,
         data: empresas,
       };
-    } catch (error) {
-      this.logger.error(
+    } catch (error : any) {
+      this.log.error("user",  
         `CONSULTAR EMPRESAS ==>  RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
-        { context: 'Empresa' },
+        'Empresa'
       );
       return {
         success: false,
@@ -72,10 +73,10 @@ export class EmpresaService {
         success: true,
         data: empresas,
       };
-    } catch (error) {
-      this.logger.error(
+    } catch (error : any) {
+      this.log.error("user",  
         `CONSULTAR EMPRESAS ==>  RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
-        { context: 'Empresa' },
+        'Empresa'
       );
       return {
         success: false,

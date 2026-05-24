@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { LogService } from 'src/log/log.service';
 import { LoginDto, LoginresponseDto } from 'src/models/login.dto';
 import { ApiResponse } from 'src/models/response.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -11,7 +12,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private log: LogService,
   ) {}
 
   async login(data: LoginDto): Promise<ApiResponse<LoginresponseDto>> {
@@ -26,9 +27,9 @@ export class AuthService {
       });
 
       if (!usuarioClave) {
-        this.logger.error(
+        this.log.error(
           `LOGIN ==> REQUEST: ${JSON.stringify(data)} | RESPONSE ERROR: Usuario ${data.idusuario} no existe`,
-          { context: 'Login' },
+          'Login',
         );
         return {
           success: false,
@@ -37,9 +38,9 @@ export class AuthService {
       }
 
       if (usuarioClave.clave !== data.clave) {
-        this.logger.error(
+        this.log.error(
           `LOGIN ==> REQUEST: ${JSON.stringify(data)} | RESPONSE ERROR: Claves de usuario ${data.idusuario} no coinciden`,
-          { context: 'Login' },
+          'Login',
         );
         return {
           success: false,
@@ -48,9 +49,9 @@ export class AuthService {
       }
 
       if (!usuarioClave.usuario.activo) {
-        this.logger.error(
+        this.log.error(
           `LOGIN ==> REQUEST: ${JSON.stringify(data)} | RESPONSE ERROR: Usuario ${data.idusuario} se encuentra inactivo`,
-          { context: 'Login' },
+          'Login',
         );
         return {
           success: false,
@@ -77,10 +78,10 @@ export class AuthService {
         success: true,
         data: loginResponse,
       };
-    } catch (error:any) {
-      this.logger.error(
+    } catch (error: any) {
+      this.log.error(
         `LOGIN ==> REQUEST: ${JSON.stringify(data)} | RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
-        { context: 'Login' },
+        'Login',
       );
 
       return {

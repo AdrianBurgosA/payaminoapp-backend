@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { LogService } from 'src/log/log.service';
 import { ApiResponse } from 'src/models/response.dto';
 import { AsignarOrdenDto } from 'src/orden/dto/orden.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -8,7 +9,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class OrdentecnicoService {
   constructor(
     private prisma: PrismaService,
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private log: LogService,
   ) {}
 
   async create(data: AsignarOrdenDto): Promise<ApiResponse> {
@@ -25,9 +26,10 @@ export class OrdentecnicoService {
         message: 'Orden asignada exitosamente.',
       };
     } catch (error: any) {
-      this.logger.error(
+      this.log.error("user",  
         `ASIGNAR ORDEN ==> REQUEST: ${JSON.stringify(data)} | RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
-        { context: 'Orden' },
+        'Orden',
+        error.message
       );
 
       return {
