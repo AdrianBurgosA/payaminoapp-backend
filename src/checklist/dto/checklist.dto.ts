@@ -6,6 +6,7 @@ export class CrearConsultarChecklistDto extends RequestBase {
 
 export class ModificarChecklistDto extends RequestBase {
     valor: boolean = false;
+    comentario: string | null = null;
 }
 
 export class ConsultarCheckListDto {

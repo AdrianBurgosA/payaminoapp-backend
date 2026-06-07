@@ -95,6 +95,7 @@ export class ChecklistService {
         },
         data: {
           completado: data.valor,
+          comentario: data.comentario,
         },
       });
 
