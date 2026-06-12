@@ -29,6 +29,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.2.6",
     "@prisma/client": "^5.22.0",
+    "@supabase/supabase-js": "^2.108.1",
     "bcryptjs": "^3.0.3",
     "nest-winston": "^1.10.2",
     "nodemailer": "^8.0.3",

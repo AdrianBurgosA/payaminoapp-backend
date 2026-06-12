@@ -34,3 +34,8 @@ export class ConsultarChecklistItemDto{
     completado: boolean = false;
     comentario: string = '';
 }
+
+export class SubirFotoDto extends RequestBase{
+  idChecklistItem: number = 0;
+  foto: string = ''; 
+}

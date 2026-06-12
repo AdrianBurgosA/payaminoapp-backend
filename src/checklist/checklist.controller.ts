@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { ChecklistService } from './checklist.service';
 import { JwtAuthGuard } from 'src/common/token/jwt-auth.guard';
-import { CrearConsultarChecklistDto, ModificarChecklistDto } from './dto/checklist.dto';
+import { CrearConsultarChecklistDto, ModificarChecklistDto, SubirFotoDto } from './dto/checklist.dto';
 
 @Controller('checklist')
 export class ChecklistController {
@@ -33,5 +33,11 @@ export class ChecklistController {
   @UseGuards(JwtAuthGuard)
   findOne(@Body() body: CrearConsultarChecklistDto) {
     return this.service.findCheckList(body);
+  }
+
+  @Post('foto')
+  @UseGuards(JwtAuthGuard)
+  subirFoto(@Body() body: SubirFotoDto) {
+    return this.service.subirFoto(body);
   }
 }

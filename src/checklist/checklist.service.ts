@@ -7,15 +7,18 @@ import {
   ConsultarChecklistItemDto,
   CrearConsultarChecklistDto,
   ModificarChecklistDto,
+  SubirFotoDto,
 } from './dto/checklist.dto';
 import { ApiResponse } from 'src/models/response.dto';
 import { LogService } from 'src/log/log.service';
+import { SupabaseService } from 'src/supabase/supabase.service';
 
 @Injectable()
 export class ChecklistService {
   constructor(
     private prisma: PrismaService,
     private log: LogService,
+    private supabaseService: SupabaseService,
   ) {}
 
   async create(data: CrearConsultarChecklistDto): Promise<ApiResponse> {
@@ -230,5 +233,56 @@ export class ChecklistService {
       return grupoDto;
     });
     return dto;
+  }
+
+  async subirFoto(data: SubirFotoDto): Promise<ApiResponse<{ url: string }>> {
+    try {
+      // 1. Convertir base64 a buffer
+      const base64 = data.foto.replace(/^data:image\/\w+;base64,/, '');
+      const buffer = Buffer.from(base64, 'base64');
+
+      // 2. Nombre único del archivo
+      const fileName = `checklist/${data.idChecklistItem}_${Date.now()}.jpg`;
+
+      // 3. Subir a Supabase Storage
+      const { error: uploadError } = await this.supabaseService
+        .getClient()
+        .storage.from(process.env.SUPABASE_BUCKET!)
+        .upload(fileName, buffer, {
+          contentType: 'image/jpeg',
+          upsert: true,
+        });
+
+      if (uploadError) {
+        this.log.error(`SUBIR FOTO ==> ${uploadError.message}`, 'Checklist');
+        return { success: false, message: 'Error al subir la foto.' };
+      }
+
+      // 4. Obtener URL pública
+      const { data: urlData } = this.supabaseService
+        .getClient()
+        .storage.from(process.env.SUPABASE_BUCKET!)
+        .getPublicUrl(fileName);
+
+      // 5. Registrar en DB
+      await this.prisma.checklistfoto.create({
+        data: {
+          idchecklistitem: data.idChecklistItem,
+          url: urlData.publicUrl,
+        },
+      });
+
+      return {
+        success: true,
+        message: 'Foto guardada exitosamente.',
+        data: { url: urlData.publicUrl },
+      };
+    } catch (error: any) {
+      this.log.error(
+        `SUBIR FOTO ==> REQUEST: ${JSON.stringify(data.idChecklistItem)} | RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
+        'Checklist',
+      );
+      return { success: false, message: 'Error al guardar la foto.' };
+    }
   }
 }
