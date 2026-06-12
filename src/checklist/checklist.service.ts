@@ -11,14 +11,13 @@ import {
 } from './dto/checklist.dto';
 import { ApiResponse } from 'src/models/response.dto';
 import { LogService } from 'src/log/log.service';
-import { SupabaseService } from 'src/supabase/supabase.service';
+import { checklistfoto } from '@prisma/client';
 
 @Injectable()
 export class ChecklistService {
   constructor(
     private prisma: PrismaService,
     private log: LogService,
-    private supabaseService: SupabaseService,
   ) {}
 
   async create(data: CrearConsultarChecklistDto): Promise<ApiResponse> {
@@ -176,7 +175,7 @@ export class ChecklistService {
         },
       });
 
-      responseConsulta = this.mapResponse(checklist);
+      responseConsulta = await this.mapResponse(checklist);
 
       this.log.info(
         data.usuario,
@@ -204,83 +203,91 @@ export class ChecklistService {
     }
   }
 
-  private mapResponse(checklist: any): ConsultarCheckListDto {
+  private async mapResponse(checklist: any): Promise<ConsultarCheckListDto> {
     const dto = new ConsultarCheckListDto();
+
     dto.idCheckList = checklist.idchecklist;
     dto.idOrden = checklist.idorden;
     dto.nombre = checklist.checklisttemplate?.nombre ?? '';
     dto.descripcion = checklist.checklisttemplate?.descripcion ?? '';
-    dto.grupos = (
-      checklist.checklisttemplate?.checklisttemplategroup ?? []
-    ).map((group: any) => {
-      const grupoDto = new ConsultarChecklistGrupoDto();
-      grupoDto.idGrupo = group.idtemplategroup;
-      grupoDto.nombre = group.nombre;
-      grupoDto.orden = group.orden ?? 0;
-      grupoDto.items = (group.checklisttemplateitem ?? []).map((ti: any) => {
-        const ci = ti.checklistitem?.[0] ?? null;
-        const itemDto = new ConsultarChecklistItemDto();
-        itemDto.idItem = ci?.idchecklistitem ?? 0;
-        itemDto.idItemTemplate = ti.idtemplateitem;
-        itemDto.nombre = ti.nombre ?? '';
-        itemDto.orden = ti.orden ?? 0;
-        itemDto.foto = ti.foto ?? false;
-        itemDto.permiteComentario = ti.comentario ?? false;
-        itemDto.completado = ci?.completado ?? false;
-        itemDto.comentario = ci?.comentario ?? '';
-        return itemDto;
-      });
-      return grupoDto;
-    });
+
+    dto.grupos = await Promise.all(
+      (checklist.checklisttemplate?.checklisttemplategroup ?? []).map(
+        async (group: any) => {
+          const grupoDto = new ConsultarChecklistGrupoDto();
+
+          grupoDto.idGrupo = group.idtemplategroup;
+          grupoDto.nombre = group.nombre;
+          grupoDto.orden = group.orden ?? 0;
+
+          grupoDto.items = await Promise.all(
+            (group.checklisttemplateitem ?? []).map(async (ti: any) => {
+              const ci = ti.checklistitem?.[0] ?? null;
+
+              const itemDto = new ConsultarChecklistItemDto();
+
+              itemDto.idItem = ci?.idchecklistitem ?? 0;
+              itemDto.idItemTemplate = ti.idtemplateitem;
+              itemDto.nombre = ti.nombre ?? '';
+              itemDto.orden = ti.orden ?? 0;
+              itemDto.foto = ti.foto ?? false;
+              itemDto.permiteComentario = ti.comentario ?? false;
+              itemDto.completado = ci?.completado ?? false;
+              itemDto.comentario = ci?.comentario ?? '';
+
+              if (ti.foto && ci?.idchecklistitem) {
+                itemDto.fotos = await this.prisma.checklistfoto.findMany({
+                  where: {
+                    idchecklistitem: ci.idchecklistitem,
+                  },
+                });
+              } else {
+                itemDto.fotos = [];
+              }
+
+              return itemDto;
+            }),
+          );
+
+          return grupoDto;
+        },
+      ),
+    );
+
     return dto;
   }
 
-  async subirFoto(data: SubirFotoDto): Promise<ApiResponse<{ url: string }>> {
+  async subirFoto(data: SubirFotoDto): Promise<ApiResponse<checklistfoto>> {
     try {
-      // 1. Convertir base64 a buffer
-      const base64 = data.foto.replace(/^data:image\/\w+;base64,/, '');
-      const buffer = Buffer.from(base64, 'base64');
+      const orden = await this.prisma.servicioorden.findUnique({
+        where: { idorden: data.idorden },
+      });
 
-      // 2. Nombre único del archivo
-      const fileName = `checklist/${data.idChecklistItem}_${Date.now()}.jpg`;
-
-      // 3. Subir a Supabase Storage
-      const { error: uploadError } = await this.supabaseService
-        .getClient()
-        .storage.from(process.env.SUPABASE_BUCKET!)
-        .upload(fileName, buffer, {
-          contentType: 'image/jpeg',
-          upsert: true,
-        });
-
-      if (uploadError) {
-        this.log.error(`SUBIR FOTO ==> ${uploadError.message}`, 'Checklist');
-        return { success: false, message: 'Error al subir la foto.' };
+      if (orden === null) {
+        return {
+          success: false,
+          message: 'Ocurrio un error al registrar la foto.',
+        };
       }
 
-      // 4. Obtener URL pública
-      const { data: urlData } = this.supabaseService
-        .getClient()
-        .storage.from(process.env.SUPABASE_BUCKET!)
-        .getPublicUrl(fileName);
-
-      // 5. Registrar en DB
-      await this.prisma.checklistfoto.create({
+      const fotoCreada = await this.prisma.checklistfoto.create({
         data: {
-          idchecklistitem: data.idChecklistItem,
-          url: urlData.publicUrl,
+          idchecklistitem: data.idchecklistitem,
+          url: data.url,
+          fechacreacion: new Date(),
         },
       });
 
       return {
         success: true,
         message: 'Foto guardada exitosamente.',
-        data: { url: urlData.publicUrl },
+        data: fotoCreada,
       };
     } catch (error: any) {
       this.log.error(
-        `SUBIR FOTO ==> REQUEST: ${JSON.stringify(data.idChecklistItem)} | RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
+        `SUBIR FOTO ==> REQUEST: ${JSON.stringify(data.idchecklistitem)} | RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
         'Checklist',
+        error.message,
       );
       return { success: false, message: 'Error al guardar la foto.' };
     }

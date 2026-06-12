@@ -98,6 +98,7 @@ model checklistfoto {
   idchecklistitem Int?
   url             String
   fechacreacion   DateTime?      @default(now()) @db.Timestamp(6)
+  fechaedicion    String?        @db.VarChar
   checklistitem   checklistitem? @relation(fields: [idchecklistitem], references: [idchecklistitem], onDelete: Cascade, onUpdate: NoAction, map: "checklist_foto_id_checklist_item_fkey")
 }
 
