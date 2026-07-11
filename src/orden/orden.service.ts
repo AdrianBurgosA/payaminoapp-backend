@@ -29,7 +29,7 @@ export class OrdenService {
           estado: 'CREADO',
           fechaentrada: new Date(data.fechaentrada),
           total: data.total,
-          idempresateam: data.team
+          idempresateam: data.team,
         },
       });
       for (const item of data.items) {
@@ -42,9 +42,10 @@ export class OrdenService {
         message: 'Orden creada exitosamente.',
       };
     } catch (error: any) {
-      this.log.error("user",  
+      this.log.error(
+        'user',
         `CREAR ORDEN ==> REQUEST: ${JSON.stringify(data)} | RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
-        'Orden'
+        'Orden',
       );
 
       return {
@@ -62,10 +63,11 @@ export class OrdenService {
         data: ordenes,
       };
     } catch (error: any) {
-      this.log.error("user",  
+      this.log.error(
+        'user',
         `CONSULTAR ORDEN ==>  RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
         'Orden',
-        error.message
+        error.message,
       );
       return {
         success: false,
@@ -134,10 +136,9 @@ export class OrdenService {
       const misOrdenes =
         rol === ROLES_ENUM.CLIENTE
           ? this.encontrarOrdenActiva(ordenesMap)
-          : ordenesMap.filter((orden) =>
-              orden.ordentecnico.some((t) => t.idusuario === usuario),
+          : ordenesMap.filter(
+              (orden) => orden.ordentecnico && orden.ordentecnico.length > 0,
             );
-
       const ordenesNoActivas = ordenesMap.filter(
         (orden) => orden.estado !== ESTADOS_ORDEN_ENUM.EN_PROCESO,
       );
@@ -189,10 +190,11 @@ export class OrdenService {
         },
       };
     } catch (error: any) {
-      this.log.error("user",  
+      this.log.error(
+        'user',
         `CONSULTAR ORDEN ==>  RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
         'Orden',
-        error.message
+        error.message,
       );
       return {
         success: false,
@@ -210,22 +212,24 @@ export class OrdenService {
         },
         include: {
           vehiculo: true,
-        }
+        },
       });
 
-      let ordenNueva : OrdenDto = orden as OrdenDto;
+      let ordenNueva: OrdenDto = orden as OrdenDto;
       const vehiculo = orden.vehiculo;
-      ordenNueva.vehiculo = (vehiculo?.marca ?? '') + ' ' + (vehiculo?.modelo ?? '');
-      ordenNueva.placa = (vehiculo?.placa ?? '');
+      ordenNueva.vehiculo =
+        (vehiculo?.marca ?? '') + ' ' + (vehiculo?.modelo ?? '');
+      ordenNueva.placa = vehiculo?.placa ?? '';
       return {
         success: true,
         data: ordenNueva,
       };
     } catch (error: any) {
-      this.log.error("user",  
+      this.log.error(
+        'user',
         `CONSULTAR ORDEN ==>  RESPONSE ERROR: ${error.meta?.target ?? error.message}`,
         'Orden',
-        error.message
+        error.message,
       );
       return {
         success: false,
