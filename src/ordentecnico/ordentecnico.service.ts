@@ -1,5 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Injectable } from '@nestjs/common';
 import { LogService } from 'src/log/log.service';
 import { ApiResponse } from 'src/models/response.dto';
 import { AsignarOrdenDto } from 'src/orden/dto/orden.dto';
@@ -14,10 +13,22 @@ export class OrdentecnicoService {
 
   async create(data: AsignarOrdenDto): Promise<ApiResponse> {
     try {
-      const orden = await this.prisma.ordentecnico.create({
+      const tecnico = await this.prisma.usuariorol.findFirst({
+        where: { idusuario: data.idtecnico },
+      });
+
+      await this.prisma.ordentecnico.create({
         data: {
-          idusuario: data.idusuario,
+          idusuario: data.idtecnico,
           idorden: data.idorden,
+          rol: String(tecnico?.idrol) ?? '',
+        },
+      });
+
+      const orden = await this.prisma.servicioorden.update({
+        where: { idorden: data.idorden },
+        data: {
+          estado: 'ASIGNADO',
         },
       });
 

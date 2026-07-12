@@ -4,6 +4,7 @@ import {
   servicioordenitem,
   vehiculo,
 } from '@prisma/client';
+import { CatalogoDto } from 'src/models/catalogoDto';
 
 export class CrearOrdenDto {
   idempresa: number = 0;
@@ -17,9 +18,10 @@ export class CrearOrdenDto {
 }
 
 export class ConsultaOrdenesHistorialHomeDto {
-  misOrdenes: OrdenDto[] = [];
   ordenesActivas: OrdenDto[] = [];
-  ordenes: OrdenDto[] = [];
+  ordenesHistorial: OrdenDto[] = []; 
+  ordenesEnProceso?: OrdenDto[] = []; 
+  tecnicos?: CatalogoDto[] = []; 
   items: servicioitem[] = [];
   vehiculos: vehiculo[] = [];
   combos: any[] = [];
@@ -43,5 +45,5 @@ export class OrdenDto {
 
 export class AsignarOrdenDto{
   idorden: number = 0;
-  idusuario: string = '';
+  idtecnico: string = '';
 }

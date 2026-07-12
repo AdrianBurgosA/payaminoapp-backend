@@ -1,9 +1,9 @@
 
 export class CreateUsuarioDto {
-  idusuario: string;
-  idempresa: number;
-  idrol: number;
-  nombre: string;
-  email: string;
+  idusuario: string = '';
+  idempresa: number = 0;
+  idrol: number = 0;
+  nombre: string = '';
+  email: string = '';
   telefono?: string;
 }

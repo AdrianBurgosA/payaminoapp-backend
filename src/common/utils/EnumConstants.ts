@@ -1,9 +1,11 @@
 export enum ROLES_ENUM {
     CLIENTE = 1,
-    EMPLEADO = 2
+    EMPLEADO = 2,
+    TECNICO = 3
 }
 
 export enum ESTADOS_ORDEN_ENUM {
     CREADO = 'CREADO',
-    EN_PROCESO = 'EN PROCESO',
+    ASIGNADO = 'ASIGNADO',
+    COMPLETADO = 'COMPLETADO',
 }

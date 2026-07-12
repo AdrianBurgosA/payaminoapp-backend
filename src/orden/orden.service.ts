@@ -11,6 +11,7 @@ import { ApiResponse } from 'src/models/response.dto';
 import { servicioorden } from '@prisma/client';
 import { ESTADOS_ORDEN_ENUM, ROLES_ENUM } from 'src/common/utils/EnumConstants';
 import { LogService } from 'src/log/log.service';
+import { CatalogoDto } from 'src/models/catalogoDto';
 
 @Injectable()
 export class OrdenService {
@@ -85,6 +86,8 @@ export class OrdenService {
     try {
       let ordenes: any = [];
       let ordenesActivas: OrdenDto[] = [];
+      let ordenesEnProceso: OrdenDto[] = [];
+      let tecnicos: CatalogoDto[] = [];
 
       if (rol === ROLES_ENUM.CLIENTE) {
         ordenes = await this.prisma.servicioorden.findMany({
@@ -129,40 +132,51 @@ export class OrdenService {
         }))
         .sort((a, b) => b.idorden - a.idorden);
 
-      const esOrdenActiva = (estado: string) =>
-        estado === ESTADOS_ORDEN_ENUM.EN_PROCESO ||
-        estado === ESTADOS_ORDEN_ENUM.CREADO;
-
-      const misOrdenes =
-        rol === ROLES_ENUM.CLIENTE
-          ? this.encontrarOrdenActiva(ordenesMap)
-          : ordenesMap.filter(
-              (orden) => orden.ordentecnico && orden.ordentecnico.length > 0,
-            );
-      const ordenesNoActivas = ordenesMap.filter(
-        (orden) => orden.estado !== ESTADOS_ORDEN_ENUM.EN_PROCESO,
+      const ordenesNoActivas = ordenesMap.filter((orden) =>
+        this.esOrdenCompletada(orden.estado),
       );
 
       ordenesActivas =
         rol === ROLES_ENUM.EMPLEADO
-          ? ordenesMap.filter(
-              (orden) =>
-                esOrdenActiva(orden.estado) &&
-                (orden.ordentecnico?.length ?? 0) === 0,
-            )
-          : [];
+          ? ordenesMap.filter((orden) => this.esOrdeEnBandeja(orden.estado))
+          : this.encontrarOrdenActiva(ordenesMap);
+
+      let usuariosTecnicos = await this.prisma.usuariorol.findMany({
+        where: {
+          idrol: ROLES_ENUM.TECNICO,
+        },
+        include: {
+          usuario: true,
+        },
+      });
+
+      tecnicos = usuariosTecnicos.map((item) => ({
+        label: item.usuario.nombre,
+        value: item.usuario.idusuario,
+      }));
+
+      console.log(JSON.stringify(usuariosTecnicos));
+
+      if (rol === ROLES_ENUM.EMPLEADO) {
+        ordenesEnProceso = ordenesMap.filter((orden) =>
+          this.esOrdenActiva(orden.estado),
+        );
+      }
+
       const servicioItems = await this.prisma.servicioitem.findMany({
         where: {
           idempresa: team,
         },
       });
 
-      const vehiculos = await this.prisma.vehiculo.findMany({
-        where: {
-          idempresa: team,
-          idusuario: usuario,
-        },
-      });
+      const vehiculos =
+        rol === ROLES_ENUM.EMPLEADO
+          ? await this.prisma.vehiculo.findMany({
+              where: {
+                idempresa: team,
+              },
+            })
+          : await this.prisma.vehiculo.findMany();
 
       const empresaTeam = await this.prisma.empresa.findFirst({
         where: { team: true, idempresa: team },
@@ -181,9 +195,10 @@ export class OrdenService {
       return {
         success: true,
         data: {
-          misOrdenes,
           ordenesActivas,
-          ordenes: ordenesNoActivas,
+          ordenesEnProceso,
+          tecnicos,
+          ordenesHistorial: ordenesNoActivas,
           items: servicioItems,
           vehiculos,
           combos: combosResponse,
@@ -242,7 +257,7 @@ export class OrdenService {
     const arregloOrden: OrdenDto[] = [];
     const ordenActiva = ordenes.find(
       (orden) =>
-        orden.estado === ESTADOS_ORDEN_ENUM.EN_PROCESO ||
+        orden.estado === ESTADOS_ORDEN_ENUM.ASIGNADO ||
         orden.estado === ESTADOS_ORDEN_ENUM.CREADO,
     );
 
@@ -268,4 +283,11 @@ export class OrdenService {
     });
     return combosArmados;
   }
+
+  esOrdenActiva = (estado: string) => estado === ESTADOS_ORDEN_ENUM.ASIGNADO;
+
+  esOrdenCompletada = (estado: string) =>
+    estado === ESTADOS_ORDEN_ENUM.COMPLETADO;
+
+  esOrdeEnBandeja = (estado: string) => estado === ESTADOS_ORDEN_ENUM.CREADO;
 }
