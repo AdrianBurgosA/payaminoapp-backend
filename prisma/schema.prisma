@@ -172,6 +172,7 @@ model servicioitem {
   precio            Decimal?            @db.Decimal(10, 2)
   activo            Boolean?            @default(true)
   fechacreacion     DateTime?           @default(now()) @db.Timestamp(6)
+  particular        Boolean             @default(false)
   comboitems        comboitems[]
   empresa           empresa?            @relation(fields: [idempresa], references: [idempresa], onDelete: NoAction, onUpdate: NoAction, map: "servicio_item_id_empresa_fkey")
   servicioordenitem servicioordenitem[]

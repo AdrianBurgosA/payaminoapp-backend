@@ -8,7 +8,7 @@ import {
   OrdenDto,
 } from './dto/orden.dto';
 import { ApiResponse } from 'src/models/response.dto';
-import { servicioorden } from '@prisma/client';
+import { servicioitem, servicioorden } from '@prisma/client';
 import { ESTADOS_ORDEN_ENUM, ROLES_ENUM } from 'src/common/utils/EnumConstants';
 import { LogService } from 'src/log/log.service';
 import { CatalogoDto } from 'src/models/catalogoDto';
@@ -88,8 +88,9 @@ export class OrdenService {
       let ordenesActivas: OrdenDto[] = [];
       let ordenesEnProceso: OrdenDto[] = [];
       let tecnicos: CatalogoDto[] = [];
+      let esEmpleado: boolean = rol === ROLES_ENUM.EMPLEADO;
 
-      if (rol === ROLES_ENUM.CLIENTE) {
+      if (!esEmpleado) {
         ordenes = await this.prisma.servicioorden.findMany({
           where: {
             idcliente: usuario,
@@ -137,7 +138,7 @@ export class OrdenService {
       );
 
       ordenesActivas =
-        rol === ROLES_ENUM.EMPLEADO
+        esEmpleado
           ? ordenesMap.filter((orden) => this.esOrdeEnBandeja(orden.estado))
           : this.encontrarOrdenActiva(ordenesMap);
 
@@ -155,22 +156,22 @@ export class OrdenService {
         value: item.usuario.idusuario,
       }));
 
-      console.log(JSON.stringify(usuariosTecnicos));
-
-      if (rol === ROLES_ENUM.EMPLEADO) {
+      if (esEmpleado) {
         ordenesEnProceso = ordenesMap.filter((orden) =>
           this.esOrdenActiva(orden.estado),
         );
       }
 
+      let bandera = esEmpleado;
       const servicioItems = await this.prisma.servicioitem.findMany({
         where: {
           idempresa: team,
+          particular: bandera
         },
       });
 
       const vehiculos =
-        rol === ROLES_ENUM.EMPLEADO
+        esEmpleado
           ? await this.prisma.vehiculo.findMany({
               where: {
                 idempresa: team,
