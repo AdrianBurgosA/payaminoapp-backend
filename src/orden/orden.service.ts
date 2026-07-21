@@ -49,6 +49,8 @@ export class OrdenService {
         'Orden',
       );
 
+      console.log(JSON.stringify(error));
+
       return {
         success: false,
         message: 'Ocurrio un error al crear la orden.',
@@ -290,5 +292,8 @@ export class OrdenService {
   esOrdenCompletada = (estado: string) =>
     estado === ESTADOS_ORDEN_ENUM.COMPLETADO;
 
-  esOrdeEnBandeja = (estado: string) => estado === ESTADOS_ORDEN_ENUM.CREADO;
+  esOrdeEnBandeja = (estado: string) => {
+    console.log(estado)
+    return estado === ESTADOS_ORDEN_ENUM.CREADO;
+  };
 }
